@@ -1,58 +1,49 @@
 ﻿<Window x:Class="FirstProject.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FirstProject"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
+    
+    
+<Grid Background="LightBlue">
         <Grid>
-
-            <!--For the buttons of the to do lists -->
-            <Button Content="Delete"  HorizontalAlignment="Right" Margin="0,10,201,0"  VerticalAlignment="Bottom" RenderTransformOrigin="-0.52,0.264"/>
-          
-
+            <Label Content="My To Do List" FontSize="18" FontStyle="Oblique" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+            <Button Content="Delete" HorizontalAlignment="Left" VerticalAlignment="Bottom" 
+                Margin="10,0,0,10"  Width="80"/>
         </Grid>
-        <Grid>
-            <!--for the list tasks table -->
-            <ListView Name="MyListView" Height="300"  Width="400">
-                <Label Content="My To Do List"></Label>
-                <WrapPanel>
-                    <Label Content="Task1"></Label>
-                    <TextBox Height="15" TextWrapping="Wrap" Text="TextBox" Width="98"/>
-                    <RadioButton Content="Done" HorizontalAlignment="Left"  VerticalAlignment="Top"/>
-                    
-                </WrapPanel>
 
-                <WrapPanel>
-                    <Label Content="Task2"></Label>
-                    <TextBox Height="15" TextWrapping="Wrap" Text="TextBox" Width="98"/>
-                    <RadioButton Content="Done" HorizontalAlignment="Left"  VerticalAlignment="Top"/>
+        <Grid Margin="0,40,0,0">
+            <ScrollViewer Height="300" Width="400" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <Label Content="Task List" FontSize="18" FontStyle="Oblique"/>
 
-                </WrapPanel>
+                    <!-- ItemsControl for dynamic tasks -->
+                    <ItemsControl x:Name="TaskItemsControl" ItemsSource="{Binding TaskList}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <WrapPanel Margin="0,5,0,5">
+                                    <TextBox Text="{Binding TaskText, UpdateSourceTrigger=PropertyChanged}" 
+                                         Height="20" Width="150" Margin="10,0,0,0" TextWrapping="Wrap"/>
+                                    <CheckBox IsChecked="{Binding IsDone, UpdateSourceTrigger=PropertyChanged}" 
+                                          Content="Done" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                    <Label Content="{Binding TaskName}" Width="50"/>
 
-                <WrapPanel>
-                    <Label Content="Task3"></Label>
-                    <TextBox Height="15" TextWrapping="Wrap" Text="TextBox" Width="98"/>
-                    <RadioButton Content="Done" HorizontalAlignment="Left"  VerticalAlignment="Top"/>
+                                </WrapPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-                </WrapPanel>
-                <WrapPanel>
-                    <Label Content="Task4"></Label>
-                    <TextBox Height="15" TextWrapping="Wrap" Text="TextBox" Width="98" />
-                    <RadioButton Content="Done" HorizontalAlignment="Left"  VerticalAlignment="Top"/>
-
-                </WrapPanel>
-                <WrapPanel>
-                    <Button Content="Edit" HorizontalAlignment="Left"  VerticalAlignment="Bottom" Margin="0,40,25,0" FontSize="16"/>
-                <Button Content="Add" HorizontalAlignment="Left"  VerticalAlignment="Bottom" RenderTransformOrigin="-5.529,-1.36" FontSize="16" />
-                </WrapPanel>
-
-            </ListView>
+                    <!-- Buttons -->
+                    <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                        <Button Content="Edit" Width="80" Margin="5" FontSize="14" />
+                        <Button Content="Add" Width="80" Margin="5" FontSize="14"/>
+                        <Button Content="Save" Width="80" Margin="5" FontSize="14" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
         </Grid>
-            
-
     </Grid>
 </Window>
