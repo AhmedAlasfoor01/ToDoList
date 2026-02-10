@@ -1,0 +1,85 @@
+﻿       <StackPanel>
+                <Label Content="Task List" 
+                       FontSize="18" 
+                       FontStyle="Oblique"
+                       Margin="0,0,0,10"/>
+
+                <!-- Dynamic Tasks with X Delete Button -->
+                <ItemsControl x:Name="TaskItemsControl" ItemsSource="{Binding TaskList}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#DDDDDD" 
+                                   BorderThickness="1" 
+                                   CornerRadius="5"
+                                   Background="White"
+                                   Padding="10"
+                                   Margin="0,5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Task Name -->
+                                    <TextBlock Grid.Column="0" 
+                                              Text="{Binding TaskName}" 
+                                              VerticalAlignment="Center"
+                                              FontWeight="Bold"
+                                              FontSize="14"
+                                              Width="80"/>
+
+                                    <!-- Task Description -->
+                                    <TextBox Grid.Column="1" 
+                                             Text="{Binding TaskText, UpdateSourceTrigger=PropertyChanged}" 
+                                             MinHeight="30"
+                                             Margin="10,0" 
+                                             TextWrapping="Wrap"
+                                             VerticalAlignment="Center"
+                                             VerticalContentAlignment="Center"
+                                             Padding="5"
+                                             BorderBrush="#CCCCCC"/>
+
+                                    <!-- Done Checkbox -->
+                                    <CheckBox Grid.Column="2" 
+                                              IsChecked="{Binding IsDone, UpdateSourceTrigger=PropertyChanged}" 
+                                              Content="Done" 
+                                              VerticalAlignment="Center"
+                                              Margin="10,0"/>
+
+                                    <!-- X Delete Button -->
+                                    <Button Grid.Column="3" 
+                                            Content="✕" 
+                                            Width="30" 
+                                            Height="30"
+                                            FontSize="18"
+                                            FontWeight="Bold"
+                                            Background="#F44336"
+                                            Foreground="White"
+                                            BorderThickness="0"
+                                            Cursor="Hand"
+                                            ToolTip="Delete Task"
+                                            Click="BtnDeleteTask_Click"
+                                            Tag="{Binding}">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="15"/>
+                                            </Style>
+                                        </Button.Resources>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Message when no tasks -->
+                <TextBlock x:Name="txtNoTasks"
+                          Text="No tasks yet. Click 'Add New Task' to get started!"
+                          FontSize="14"
+                          Foreground="Gray"
+                          HorizontalAlignment="Center"
+                          Margin="20"
+                          Visibility="Collapsed"/>
+            </StackPanel>

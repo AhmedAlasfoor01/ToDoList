@@ -1,49 +1,131 @@
-﻿<Window x:Class="FirstProject.MainWindow"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿
+<Window x:Class="FirstProject.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:FirstProject"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    
-    
+        Title="My To Do List" Height="600" Width="500"
+        MinHeight="400" MinWidth="400">
 <Grid Background="LightBlue">
-        <Grid>
-            <Label Content="My To Do List" FontSize="18" FontStyle="Oblique" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-            <Button Content="Delete" HorizontalAlignment="Left" VerticalAlignment="Bottom" 
-                Margin="10,0,0,10"  Width="80"/>
-        </Grid>
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
 
-        <Grid Margin="0,40,0,0">
-            <ScrollViewer Height="300" Width="400" VerticalScrollBarVisibility="Auto">
-                <StackPanel>
-                    <Label Content="Task List" FontSize="18" FontStyle="Oblique"/>
-
-                    <!-- ItemsControl for dynamic tasks -->
-                    <ItemsControl x:Name="TaskItemsControl" ItemsSource="{Binding TaskList}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <WrapPanel Margin="0,5,0,5">
-                                    <TextBox Text="{Binding TaskText, UpdateSourceTrigger=PropertyChanged}" 
-                                         Height="20" Width="150" Margin="10,0,0,0" TextWrapping="Wrap"/>
-                                    <CheckBox IsChecked="{Binding IsDone, UpdateSourceTrigger=PropertyChanged}" 
-                                          Content="Done" Margin="10,0,0,0" VerticalAlignment="Center"/>
-                                    <Label Content="{Binding TaskName}" Width="50"/>
-
-                                </WrapPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <!-- Buttons -->
-                    <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-                        <Button Content="Edit" Width="80" Margin="5" FontSize="14" />
-                        <Button Content="Add" Width="80" Margin="5" FontSize="14"/>
-                        <Button Content="Save" Width="80" Margin="5" FontSize="14" />
-                    </StackPanel>
-                </StackPanel>
-            </ScrollViewer>
-        </Grid>
+    <!-- Header -->
+    <Grid Grid.Row="0" Margin="10">
+        <Label Content="My To Do List" 
+                   FontSize="20" 
+                   FontWeight="Bold"
+                   FontStyle="Oblique" 
+                   HorizontalAlignment="Center"/>
     </Grid>
-</Window>
+
+    <!-- Task List Scrollable -->
+    <ScrollViewer Grid.Row="1" 
+                     Margin="10" 
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Disabled">
+        <StackPanel>
+            <!-- No Tasks Message -->
+            <TextBlock x:Name="txtNoTasks"
+                          Text="No tasks yet! Click 'Add New Task' to get started."
+                          FontSize="14"
+                          FontStyle="Italic"
+                          Foreground="Gray"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          Margin="0,50,0,0"
+                          Visibility="Collapsed"/>
+
+            <!-- Tasks Display -->
+                <ItemsControl x:Name="TaskItemsControl" ItemsSource="{Binding TaskList}"><!--we have used binding so whenever any updates gonna happen in the window1 it's gonna be updated on the mainwindow-->
+                    <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="LightGray" 
+                                    BorderThickness="1" 
+                                    CornerRadius="5" 
+                                    Background="White" 
+                                    Padding="10" 
+                                    Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Label Content="Task:" 
+                                           Grid.Column="0" 
+                                           VerticalAlignment="Center" 
+                                           FontWeight="SemiBold" 
+                                           Width="50"/>
+
+                                <TextBox Text="{Binding TaskName, UpdateSourceTrigger=PropertyChanged}" 
+                                             Grid.Column="1" 
+                                             MinHeight="30" 
+                                             Margin="5,0,5,0"
+                                             VerticalAlignment="Center" 
+                                             VerticalContentAlignment="Center" 
+                                             Padding="5"
+                                             BorderBrush="LightGray"/>
+
+                                <CheckBox IsChecked="{Binding IsDone, Mode=TwoWay}" 
+                                              Content="Done" 
+                                              Grid.Column="2" 
+                                              VerticalAlignment="Center" 
+                                              Margin="10,0,10,0"/>
+
+                                <Button Content="✕" 
+                                            Grid.Column="3" 
+                                            Width="30" 
+                                            Height="30" 
+                                            FontSize="16" 
+                                            FontWeight="Bold" 
+                                            Background="Red" 
+                                            Foreground="White" 
+                                            BorderThickness="0" 
+                                            Cursor="Hand"
+                                            ToolTip="Delete Task"
+                                            Click="BtnDeleteTask_Click" 
+                                            Tag="{Binding}"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+
+    <!-- Bottom Buttons -->
+    <Grid Grid.Row="2" Margin="10,10,10,20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Button Grid.Column="0" 
+                    Content="Add New Task" 
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    MinHeight="40"
+                    Background="#2196F3"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Click="BtnAddNewTask_Click"/>
+
+        <Button Grid.Column="2" 
+                    Content="Clear All" 
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    MinHeight="40"
+                    Background="#FF9800"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Click="BtnClearAll_Click"/>
+    </Grid>
+</Grid>
+</Window> 

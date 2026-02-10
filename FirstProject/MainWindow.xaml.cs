@@ -13,11 +13,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-using System;
+
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
+
 
 namespace FirstProject
 {
@@ -32,84 +31,115 @@ namespace FirstProject
             {
                 _taskList = value;
                 OnPropertyChanged(nameof(TaskList));
+                UpdateNoTasksMessage();
             }
         }
+
+        public Panel ContenArea { get; private set; }
 
         public MainWindow()
         {
             InitializeComponent();
+            // Assign ContenArea to the named panel from XAML
+            ContenArea = this.FindName("ContenArea") as Panel;//this function gonna let us access the content area from the code behind
             InitializeTasks();
-            DataContext = this; // Set DataContext for binding
+            DataContext = this;
+            FirstProject.NewTaskPage newTaskPage = new FirstProject.NewTaskPage();
+           // ContenArea.Children.Add(newTaskPage);
+
+
+
         }
 
-    
+        // Add this constructor to accept an ObservableCollection<TaskItem>
+        public MainWindow(ObservableCollection<TaskItem> taskList)
+        {
+            InitializeComponent();
+            _taskList = taskList;
+            TaskList = taskList;
+            // Optionally, update UI or perform other initialization as needed
+        }
 
         private void InitializeTasks()
         {
             TaskList = new ObservableCollection<TaskItem>
             {
-                new TaskItem { TaskName = "Task1", TaskText = "Enter task 1", IsDone = false },
-                new TaskItem { TaskName = "Task2", TaskText = "Enter task 2", IsDone = false },
-                new TaskItem { TaskName = "Task3", TaskText = "Enter task 3", IsDone = false },
-                new TaskItem { TaskName = "Task4", TaskText = "Enter task 4", IsDone = false }
+                new TaskItem { TaskName = "Sample Task", TaskText = "This is a sample task", IsDone = false }
             };
 
-            this.TaskItemsControl.ItemsSource = TaskList;
+            // Listen for collection changes
+            TaskList.CollectionChanged += (s, e) => UpdateNoTasksMessage();
         }
 
-        // EDIT Button
-        private void BtnEdit_Click(object sender, RoutedEventArgs e)
+        // Add New Task Button - Opens the Add Task Page
+        private void BtnAddNewTask_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Edit mode enabled! Modify your tasks.", "Edit");
+            NewTaskPage addTaskPage = new NewTaskPage();
+
+            // ShowDialog returns true if user clicked "Add Task"
+            //if (addTaskPage.ShowDialog() == true)
+            //{
+            //    // Add the new task to the list
+            //    //TaskList.Add(addTaskPage.NewTask);
+
+            //    //MessageBox.Show($"Task '{addTaskPage.NewTask.TaskName}' added successfully!",
+            //    //              "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            //}
         }
 
-        // ADD Button - Add new task
-        private void BtnAdd_Click(object sender, RoutedEventArgs e)
+        // Delete Individual Task (X button)
+        private void BtnDeleteTask_Click(object sender, RoutedEventArgs e)
         {
-            int nextTaskNumber = TaskList.Count + 1;
-
-            TaskList.Add(new TaskItem
+            Button btn = sender as Button;
+            if (btn != null && btn.Tag is TaskItem taskToDelete)
             {
-                TaskName = $"Task{nextTaskNumber}",
-                TaskText = $"Enter task {nextTaskNumber}",
-                IsDone = false
-            });
+                var result = MessageBox.Show(
+                    $"Are you sure you want to delete '{taskToDelete.TaskName}'?",
+                    "Confirm Delete",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
 
-            MessageBox.Show($"Task{nextTaskNumber} added successfully!", "Success");
+                if (result == MessageBoxResult.Yes)
+                {
+                    TaskList.Remove(taskToDelete);
+                    MessageBox.Show("Task deleted successfully!", "Success",
+                                  MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
         }
 
-        // DELETE Button - Clear all tasks
-        private void BtnDelete_Click(object sender, RoutedEventArgs e)
+        // Clear All Tasks
+        private void BtnClearAll_Click(object sender, RoutedEventArgs e)
         {
+            if (TaskList.Count == 0)
+            {
+                MessageBox.Show("No tasks to clear!", "Info",
+                              MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             var result = MessageBox.Show(
-                "Are you sure you want to clear all tasks?",
-                "Confirm Delete",
+                $"Are you sure you want to delete all {TaskList.Count} tasks?",
+                "Confirm Clear All",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                MessageBoxImage.Warning);
 
             if (result == MessageBoxResult.Yes)
             {
-                foreach (var task in TaskList)
-                {
-                    task.TaskText = "";
-                    task.IsDone = false;
-                }
-                MessageBox.Show("All tasks cleared!", "Success");
+                TaskList.Clear();
+                MessageBox.Show("All tasks cleared!", "Success",
+                              MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
-        // SAVE Button - Show current tasks
-        private void BtnSave_Click(object sender, RoutedEventArgs e)
+        // Update "No tasks" message visibility
+        private void UpdateNoTasksMessage()
         {
-            string taskSummary = "Current Tasks:\n\n";
-
-            foreach (var task in TaskList)
-            {
-                string status = task.IsDone ? "✓ Done" : "○ Pending";
-                taskSummary += $"{task.TaskName}: {task.TaskText} [{status}]\n";
-            }
-
-            MessageBox.Show(taskSummary, "Task Summary");
+            //if (txtNoTasks != null)
+            //{
+            //    txtNoTasks.Visibility = TaskList.Count == 0 ?
+            //        Visibility.Visible : Visibility.Collapsed;
+            //}
         }
 
         // INotifyPropertyChanged implementation
