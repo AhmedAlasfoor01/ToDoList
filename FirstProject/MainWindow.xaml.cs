@@ -1,19 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
-
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 
@@ -44,8 +30,7 @@ namespace FirstProject
             ContenArea = this.FindName("ContenArea") as Panel;//this function gonna let us access the content area from the code behind
             InitializeTasks();
             DataContext = this;
-            FirstProject.NewTaskPage newTaskPage = new FirstProject.NewTaskPage();
-           // ContenArea.Children.Add(newTaskPage);
+           
 
 
 
@@ -72,19 +57,15 @@ namespace FirstProject
         }
 
         // Add New Task Button - Opens the Add Task Page
+        // Add New Task Button - Opens the Add Task Page
         private void BtnAddNewTask_Click(object sender, RoutedEventArgs e)
         {
-            NewTaskPage addTaskPage = new NewTaskPage();
+            // Clear the content area first
+            ContenArea.Children.Clear();
 
-            // ShowDialog returns true if user clicked "Add Task"
-            //if (addTaskPage.ShowDialog() == true)
-            //{
-            //    // Add the new task to the list
-            //    //TaskList.Add(addTaskPage.NewTask);
-
-            //    //MessageBox.Show($"Task '{addTaskPage.NewTask.TaskName}' added successfully!",
-            //    //              "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            //}
+            // Add the NewTaskPage to the content area
+            NewTaskPage addTaskPage = new NewTaskPage(_taskList);
+            ContenArea.Children.Add(addTaskPage); // ✅ No .Show() needed
         }
 
         // Delete Individual Task (X button)

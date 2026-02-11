@@ -1,11 +1,11 @@
-﻿<Window x:Class="FirstProject.NewTaskPage"
+﻿<UserControl x:Class="FirstProject.NewTaskPage"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="NewTaskPage" Height="400" Width="450"
-        MinHeight="300" MinWidth="400"
+         Height="400" Width="450"
+        MinHeight="300" MinWidth="400"        
    >
 
-
+    <!--removed title because the the usercontrol they don't accept title-->
 
 
 
@@ -213,5 +213,5 @@
 
 
 
-</Window>
+</UserControl>
                        

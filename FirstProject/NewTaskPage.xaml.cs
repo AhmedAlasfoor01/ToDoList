@@ -1,122 +1,124 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Collections.ObjectModel;
-
+using System;
+using System.Collections.Generic;
 
 namespace FirstProject
 {
-    public partial class NewTaskPage : Window
+    public partial class NewTaskPage :UserControl // Changed from Page to Window
     {
-        private int taskCounter = 5;
+        private int taskCounter = 5; 
         private ObservableCollection<TaskItem> _taskList;
-        private Window _parentWindow;
+        public NewTaskPage() : this(null)//because I have to clarify that I want to call the constructor with the task list parameter, and I want to pass null to it so it will create a new empty list
+        {
+        }
 
-        // Constructor that receives TaskList and parent window
-        public NewTaskPage(ObservableCollection<TaskItem> taskList, Window parentWindow)
+        public NewTaskWindow NewTaskWindow { get; }
+
+        public NewTaskPage(ObservableCollection<TaskItem> taskList = null)
         {
             InitializeComponent();
-            _taskList = taskList ?? new ObservableCollection<TaskItem>();// Ensure we have a valid task list
-            _parentWindow = parentWindow;
+            _taskList = taskList ?? new ObservableCollection<TaskItem>();
+
+            // Set placeholder text for initial tasks
+            SetPlaceholder(txtTask1);
+            SetPlaceholder(txtTask2);
+            SetPlaceholder(txtTask3);
+            SetPlaceholder(txtTask4);
         }
 
-        public NewTaskPage()
+        public NewTaskPage(ObservableCollection<TaskItem> taskList = null, NewTaskWindow newTaskWindow = null) : this(taskList)
         {
-            InitializeComponent();
-            _taskList = new ObservableCollection<TaskItem>();
+            NewTaskWindow = newTaskWindow;
         }
 
-        
-        private void BtnDeleteTask1_Click(object sender, RoutedEventArgs e)
+        // Placeholder text helpers
+        private void SetPlaceholder(TextBox textBox)
         {
-            DeleteTask(txtTask1, chkTask1, sender as Button);
-        }
-
-        // Delete Task 2
-        private void BtnDeleteTask2_Click(object sender, RoutedEventArgs e)
-        {
-            DeleteTask(txtTask2, chkTask2, sender as Button);//delete function 
-        }
-
-        private void BtnDeleteTask3_Click(object sender, RoutedEventArgs e)
-        {
-            DeleteTask(txtTask3, chkTask3, sender as Button);
-        }
-
-        
-        private void BtnDeleteTask4_Click(object sender, RoutedEventArgs e)
-        {
-            DeleteTask(txtTask4, chkTask4, sender as Button);
-        }
-
-        // Helper method to delete a task
-        private void DeleteTask(TextBox textBox, CheckBox checkBox, Button deleteButton)
-        {
-            var result = MessageBox.Show(
-                $"Are you sure you want to delete '{textBox.Text}'?",
-                "Confirm Delete",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            if (string.IsNullOrWhiteSpace(textBox.Text))
             {
-                Border parentBorder = FindParent<Border>(deleteButton);
-                if (parentBorder != null)
-                {
-                    TaskPanel.Children.Remove(parentBorder);
-                    MessageBox.Show("Task deleted successfully!", "Success",
-                                  MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                textBox.Text = textBox.Tag?.ToString() ?? "Enter your task";
+                textBox.Foreground = System.Windows.Media.Brushes.Gray;
             }
         }
 
-        // Add New Task Button
+        private void txtTask1_GotFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            if (textBox?.Text == textBox?.Tag?.ToString())
+            {
+                textBox.Text = "";
+                textBox.Foreground = System.Windows.Media.Brushes.Black;
+            }
+        }
+
+        private void txtTask1_LostFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            if (string.IsNullOrWhiteSpace(textBox?.Text))
+            {
+                SetPlaceholder(textBox);
+            }
+        }
+
+        // Add New Task
         private void BtnAddTask_Click(object sender, RoutedEventArgs e)
         {
-            Border newTaskBorder = new Border//so when the user clicks new task it's gonna create  anew task with the same design as the previous ones and add it to the task panel
+            // Create new task border
+            Border taskBorder = new Border
             {
-                BorderBrush = Brushes.LightGray,
+                BorderBrush = System.Windows.Media.Brushes.LightGray,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(5),
-                Background = Brushes.White,
+                Background = System.Windows.Media.Brushes.White,
                 Padding = new Thickness(10),
-                Margin = new Thickness(0, 5, 0, 0)
+                Margin = new Thickness(5,0,0,0)
             };
 
-            Grid taskGrid = new Grid();
-            taskGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            taskGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            taskGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            taskGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            Grid grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
+            // Label
             Label label = new Label
             {
                 Content = $"Task {taskCounter}:",
+                Width = 60,
                 VerticalAlignment = VerticalAlignment.Center,
-                FontWeight = FontWeights.SemiBold,
-                Width = 60
+                FontWeight = FontWeights.SemiBold
             };
             Grid.SetColumn(label, 0);
 
+            // TextBox
             TextBox textBox = new TextBox
             {
-                Text = $"New task {taskCounter}",
+                Name = $"txtTask{taskCounter}",
                 MinHeight = 30,
-                Margin = new Thickness(5, 0, 5, 0),
-                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(5, 0, 0, 0),
                 VerticalContentAlignment = VerticalAlignment.Center,
-                Padding = new Thickness(5)
+                Padding = new Thickness(5),
+                Foreground = System.Windows.Media.Brushes.Gray,
+                Tag = "Enter your task"
             };
+            textBox.GotFocus += txtTask1_GotFocus;
+            textBox.LostFocus += txtTask1_LostFocus;
+            SetPlaceholder(textBox);
             Grid.SetColumn(textBox, 1);
 
+            // CheckBox
             CheckBox checkBox = new CheckBox
             {
+                Name = $"chkTask{taskCounter}",
                 Content = "Done",
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(10, 0, 10, 0)
+                Margin = new Thickness(10, 0,0,0),
+                VerticalAlignment = VerticalAlignment.Center
             };
             Grid.SetColumn(checkBox, 2);
 
+            // Delete Button
             Button deleteButton = new Button
             {
                 Content = "✕",
@@ -124,40 +126,64 @@ namespace FirstProject
                 Height = 30,
                 FontSize = 16,
                 FontWeight = FontWeights.Bold,
-                Background = Brushes.Red,
-                Foreground = Brushes.White,
-                BorderThickness = new Thickness(0),
-                Cursor = System.Windows.Input.Cursors.Hand,
-                ToolTip = "Delete Task"
+                Background = System.Windows.Media.Brushes.Red,
+                Foreground = System.Windows.Media.Brushes.White,
+                BorderThickness = new Thickness(0)
             };
+            deleteButton.Click += (s, args) => TaskPanel.Children.Remove(taskBorder);
             Grid.SetColumn(deleteButton, 3);
 
-            deleteButton.Click += (s, args) =>
-            {
-                DeleteTask(textBox, checkBox, deleteButton);
-            };
+            // Add all to grid
+            grid.Children.Add(label);
+            grid.Children.Add(textBox);
+            grid.Children.Add(checkBox);
+            grid.Children.Add(deleteButton);
 
-            taskGrid.Children.Add(label);
-            taskGrid.Children.Add(textBox);
-            taskGrid.Children.Add(checkBox);
-            taskGrid.Children.Add(deleteButton);
-
-            newTaskBorder.Child = taskGrid;
-            TaskPanel.Children.Add(newTaskBorder);
-
+            taskBorder.Child = grid;
+            TaskPanel.Children.Add(taskBorder);
             taskCounter++;
 
-            MessageBox.Show($"Task {taskCounter - 1} added successfully!", "Success",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Task {taskCounter - 1} added successfully!",
+                          "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        
-        // Save All Tasks - Transfer to MainWindow and Navigate
-        private void BtnSaveAll_Click(object sender, RoutedEventArgs e)//i had an error so it gave me error in the sender but i fixed it by changing it and  worked fine
+        // Delete individual tasks
+        private void BtnDeleteTask1_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteTaskAtIndex(0);
+        }
+
+        private void BtnDeleteTask2_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteTaskAtIndex(1);
+        }
+
+        private void BtnDeleteTask3_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteTaskAtIndex(2);
+        }
+
+        private void BtnDeleteTask4_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteTaskAtIndex(3);
+        }
+
+        private void DeleteTaskAtIndex(int index)
+        {
+            if (index >= 0 && index < TaskPanel.Children.Count)
+            {
+                TaskPanel.Children.RemoveAt(index);
+                MessageBox.Show("Task deleted successfully!",
+                              "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        // Save All Tasks - FIXED!
+        private void BtnSaveAll_Click(object sender, RoutedEventArgs e)
         {
             int savedCount = 0;
+            var incompleteTasks = new List<string>();
 
-            // Loop through all tasks in the TaskPanel
             foreach (UIElement element in TaskPanel.Children)
             {
                 if (element is Border border && border.Child is Grid grid)
@@ -165,63 +191,74 @@ namespace FirstProject
                     TextBox textBox = null;
                     CheckBox checkBox = null;
 
-                    // Find the TextBox and CheckBox in the grid
+                    // Find TextBox and CheckBox in the grid
                     foreach (UIElement child in grid.Children)
                     {
                         if (child is TextBox tb)
                             textBox = tb;
-                        if (child is CheckBox cb)
+                        else if (child is CheckBox cb)
                             checkBox = cb;
                     }
 
-                   
-                    if (textBox != null && !string.IsNullOrWhiteSpace(textBox.Text))// to warn the user if it's done or yet and complete the task without stopping the process of saving the other tasks if there are any incomplete tasks
-                    {
-                        
-                        if (checkBox?.IsChecked != true)
-                        {
-                            MessageBox.Show($"Task '{textBox.Text}' is not done yet!",
-                                           "Incomplete Task",
-                                           MessageBoxButton.OK,
-                                           MessageBoxImage.Warning);
-                            continue; 
-                        }
+                    if (textBox == null || checkBox == null)
+                        continue;
 
-                        var newTask = new TaskItem
-                        {
-                            TaskName = textBox.Text,
-                            TaskText = "",
-                            IsDone = true 
-                        };
-                        _taskList.Add(newTask);
-                        savedCount++;
+                    string taskText = textBox.Text;
+
+                    // Skip if empty or placeholder
+                    if (string.IsNullOrWhiteSpace(taskText) ||
+                        taskText == textBox.Tag?.ToString())
+                        continue;
+
+                    // Check if task is done
+                    if (checkBox.IsChecked != true)
+                    {
+                        incompleteTasks.Add(taskText);
+                        continue;
                     }
+
+                    // Save completed task
+                    var newTask = new TaskItem
+                    {
+                        TaskName = taskText,
+                        TaskText = "",
+                        IsDone = true
+                    };
+                    _taskList.Add(newTask);
+                    savedCount++;
                 }
             }
 
+            // Show incomplete tasks
+            if (incompleteTasks.Count > 0)
+            {
+                string message = "The following tasks are not done yet:\n\n" +
+                               string.Join("\n", incompleteTasks);
+                MessageBox.Show(message, "Incomplete Tasks",
+                              MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
             if (savedCount > 0)
             {
-                MessageBox.Show($"{savedCount} task(s) saved successfully! Opening Main Window...",
-                              "Success",
-                              MessageBoxButton.OK,
-                              MessageBoxImage.Information);
+                MessageBox.Show($"{savedCount} task(s) saved successfully!",
+                              "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                //  show MainWindow with the TaskList in the to do list 
-                MainWindow mainWindow = new MainWindow(_taskList);
-                mainWindow.Show();
-
-                // Close the current window (NewTaskWindow)
-                _parentWindow.Close();
+                // Find the parent window and navigate back to MainWindow view
+                Window parentWindow = Window.GetWindow(this);
+                if (parentWindow is MainWindow mainWindow)
+                {
+                    // Already in MainWindow, just clear the ContenArea or refresh the view
+                    mainWindow.ContenArea.Children.Clear();
+                    // Optionally show the main content or refresh
+                }
             }
             else
             {
-                MessageBox.Show("No tasks to save! Please add at least one task.",
-                              "Info",
-                              MessageBoxButton.OK,
-                              MessageBoxImage.Information);
+                MessageBox.Show("No completed tasks to save!", "Info",
+                              MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-        // Clear All Tasks
+
+        // Clear All
         private void BtnClearAll_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(
@@ -232,17 +269,18 @@ namespace FirstProject
 
             if (result == MessageBoxResult.Yes)
             {
-                foreach (Border border in TaskPanel.Children)
+                foreach (UIElement element in TaskPanel.Children)
                 {
-                    if (border.Child is Grid grid)
+                    if (element is Border border && border.Child is Grid grid)
                     {
-                        foreach (var child in grid.Children)
+                        foreach (UIElement child in grid.Children)
                         {
                             if (child is TextBox textBox)
                             {
-                                textBox.Clear();
+                                textBox.Text = "";
+                                SetPlaceholder(textBox);
                             }
-                            if (child is CheckBox checkBox)
+                            else if (child is CheckBox checkBox)
                             {
                                 checkBox.IsChecked = false;
                             }
@@ -254,28 +292,5 @@ namespace FirstProject
                               MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-
-        // Helper method to find parent element
-        private T FindParent<T>(DependencyObject child) where T : DependencyObject
-        {
-            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
-
-            if (parentObject == null) return null;
-
-            T parent = parentObject as T;
-            if (parent != null)
-                return parent;
-            else
-                return FindParent<T>(parentObject);
-        }
-         public void OpenMainWindow()
-        { //this fucntion should open the main window after the user clicks save all and it should pass the task list to the main window so it can show the tasks in the to do list
-            MainWindow mainWindow = new MainWindow(_taskList);
-            mainWindow.Show();
-            
-        }
-
-        private void txtTask1_GotFocus(object sender, RoutedEventArgs e) { }
-        private void txtTask1_LostFocus(object sender, RoutedEventArgs e) { }
     }
 }
