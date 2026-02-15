@@ -1,8 +1,9 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System;
-using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 
 namespace FirstProject
 {
@@ -12,9 +13,12 @@ namespace FirstProject
         private ObservableCollection<TaskItem> _taskList;
         public NewTaskPage() : this(null)//because I have to clarify that I want to call the constructor with the task list parameter, and I want to pass null to it so it will create a new empty list
         {
+
         }
 
         public NewTaskWindow NewTaskWindow { get; }
+
+       
 
         public NewTaskPage(ObservableCollection<TaskItem> taskList = null)
         {
@@ -22,15 +26,60 @@ namespace FirstProject
             _taskList = taskList ?? new ObservableCollection<TaskItem>();
 
             // Set placeholder text for initial tasks
-            SetPlaceholder(txtTask1);
-            SetPlaceholder(txtTask2);
-            SetPlaceholder(txtTask3);
-            SetPlaceholder(txtTask4);
+           //SetPlaceholder(txtTask1);
+            //SetPlaceholder(txtTask2);
+            //SetPlaceholder(txtTask3);
+            //SetPlaceholder(txtTask4);
         }
 
         public NewTaskPage(ObservableCollection<TaskItem> taskList = null, NewTaskWindow newTaskWindow = null) : this(taskList)
         {
             NewTaskWindow = newTaskWindow;
+        }
+
+        // Public method to get all tasks from the TaskPanel
+        public List<TaskItem> GetAllTasks()
+        {
+            var tasks = new List<TaskItem>();
+
+            foreach (UIElement element in TaskPanel.Children)
+            {
+                if (element is Border border && border.Child is Grid grid)
+                {
+                    TextBox textBox = null;
+                    CheckBox checkBox = null;
+
+                    // Find TextBox and CheckBox in the grid
+                    foreach (UIElement child in grid.Children)
+                    {
+                        if (child is TextBox tb)
+                            textBox = tb;
+                        else if (child is CheckBox cb)
+                            checkBox = cb;
+                    }
+
+                    if (textBox == null || checkBox == null)
+                        continue;
+
+                    string taskText = textBox.Text;
+
+                    // Skip if empty or placeholder
+                    if (string.IsNullOrWhiteSpace(taskText) ||
+                        taskText == textBox.Tag?.ToString())
+                        continue;
+
+                    // Create task item
+                    var task = new TaskItem
+                    {
+                        TaskName = taskText,
+                        TaskText = "",
+                        IsDone = checkBox.IsChecked == true
+                    };
+                    tasks.Add(task);
+                }
+            }
+
+            return tasks;
         }
 
         // Placeholder text helpers
@@ -181,74 +230,37 @@ namespace FirstProject
         // Save All Tasks - FIXED!
         private void BtnSaveAll_Click(object sender, RoutedEventArgs e)
         {
-            int savedCount = 0;
-            var incompleteTasks = new List<string>();
+            var allTasks = GetAllTasks();
+            var completedTasks = allTasks.Where(t => t.IsDone).ToList();
+            var incompleteTasks = allTasks.Where(t => !t.IsDone).ToList();
 
-            foreach (UIElement element in TaskPanel.Children)
+            // Add completed tasks to the shared list
+            foreach (var task in completedTasks)
             {
-                if (element is Border border && border.Child is Grid grid)
-                {
-                    TextBox textBox = null;
-                    CheckBox checkBox = null;
-
-                    // Find TextBox and CheckBox in the grid
-                    foreach (UIElement child in grid.Children)
-                    {
-                        if (child is TextBox tb)
-                            textBox = tb;
-                        else if (child is CheckBox cb)
-                            checkBox = cb;
-                    }
-
-                    if (textBox == null || checkBox == null)
-                        continue;
-
-                    string taskText = textBox.Text;
-
-                    // Skip if empty or placeholder
-                    if (string.IsNullOrWhiteSpace(taskText) ||
-                        taskText == textBox.Tag?.ToString())
-                        continue;
-
-                    // Check if task is done
-                    if (checkBox.IsChecked != true)
-                    {
-                        incompleteTasks.Add(taskText);
-                        continue;
-                    }
-
-                    // Save completed task
-                    var newTask = new TaskItem
-                    {
-                        TaskName = taskText,
-                        TaskText = "",
-                        IsDone = true
-                    };
-                    _taskList.Add(newTask);
-                    savedCount++;
-                }
+                _taskList.Add(task);
             }
 
-            // Show incomplete tasks
+            // Show incomplete tasks warning
             if (incompleteTasks.Count > 0)
             {
                 string message = "The following tasks are not done yet:\n\n" +
-                               string.Join("\n", incompleteTasks);
+                               string.Join("\n", incompleteTasks.Select(t => t.TaskName));
                 MessageBox.Show(message, "Incomplete Tasks",
                               MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-            if (savedCount > 0)
+
+            if (completedTasks.Count > 0)
             {
-                MessageBox.Show($"{savedCount} task(s) saved successfully!",
+                MessageBox.Show($"{completedTasks.Count} task(s) saved successfully!",
                               "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Find the parent window and navigate back to MainWindow view
+                // Navigate back to MainWindow
                 Window parentWindow = Window.GetWindow(this);
-                if (parentWindow is MainWindow mainWindow)
+                  // Check the Window.Content (object) for a `MainWindow` instance.
+                if (parentWindow?.Content is MainWindow mainWindow)
                 {
-                    // Already in MainWindow, just clear the ContenArea or refresh the view
                     mainWindow.ContenArea.Children.Clear();
-                    // Optionally show the main content or refresh
+                    
                 }
             }
             else

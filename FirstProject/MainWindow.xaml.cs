@@ -6,7 +6,7 @@ using System.ComponentModel;
 
 namespace FirstProject
 {
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : UserControl, INotifyPropertyChanged
     {
         private ObservableCollection<TaskItem> _taskList;
 
@@ -22,6 +22,10 @@ namespace FirstProject
         }
 
         public Panel ContenArea { get; private set; }
+
+        public void InitializeComponent()
+        {
+        }
 
         public MainWindow()
         {
